@@ -26,3 +26,17 @@ class CollectionViewset(viewsets.ModelViewSet):
         url = f"https://api.opensea.io/api/v1/asset/{Collection.address}/{nft_id}/"
         response = requests.get(url).json()
         return Response({"response": response})
+
+    @action(detail=True)
+    def nfts(self, request, pk=None):
+        Collection = get_object_or_404(collection, pk=pk)
+        nft_ids_str = request.GET.get("ids")
+        nft_ids = [int(id) for id in nft_ids_str.split(",")]
+        querystring = {"asset_contract_address": Collection.address,
+                       "token_ids": nft_ids, "order_direction": "desc", "offset": "0", "limit": "20"}
+        url = f"https://api.opensea.io/api/v1/assets/"
+
+        response = requests.get(url, params=querystring)
+        response_ison = response.json()
+        response_text = response.text
+        return Response({"response": response})
