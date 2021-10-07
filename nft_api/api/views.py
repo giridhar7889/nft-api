@@ -40,3 +40,20 @@ class CollectionViewset(viewsets.ModelViewSet):
         response_ison = response.json()
         response_text = response.text
         return Response({"response": response})
+
+    @action(detail=True)
+    def nft_events(self, request, pk=None):
+        Collection = get_object_or_404(collection, pk=pk)
+        nft_id = request.GET.get("id")
+        url = "https://api.opensea.io/api/v1/events"
+        querystring = {"only_opensea": "false", "offset": "0", "limit": "20",
+                       "asset_contract_address": Collection.address, "token_id": int(nft_id)}
+        response = requests.get(url, params=querystring).json()
+        return Response(response)
+
+    @action(detail=True)
+    def opensea_data(self, request, pk=None):
+        Collection = get_object_or_404(collection, pk=pk)
+        url = f"https://api.opensea.io/api/v1/asset_contract/{Collection.address}"
+        response = requests.get(url).json()
+        return Response(response)
